@@ -98,6 +98,19 @@ electron_1.ipcMain.handle('delete-event', (event, id) => __awaiter(void 0, void 
         });
     });
 }));
+electron_1.ipcMain.handle('update-event', (event, updatedEvent) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id, date, title } = updatedEvent;
+    const sql = 'UPDATE events SET date = ?, title = ? WHERE id = ?';
+    return new Promise((resolve, reject) => {
+        connection.execute(sql, [date, title, id], (err) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve();
+        });
+    });
+}));
 electron_1.app.whenReady().then(createWindow);
 electron_1.app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {

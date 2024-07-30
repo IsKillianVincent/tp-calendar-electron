@@ -20,7 +20,7 @@ async function loadEventDetails() {
 eventDetailForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const updatedEvent = {
-        id: eventId,
+        id: parseInt(eventId, 10),
         date: eventDateInput.value,
         title: eventTitleInput.value
     };

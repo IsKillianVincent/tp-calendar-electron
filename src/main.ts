@@ -68,6 +68,20 @@ ipcMain.handle('delete-event', async (event, id: number) => {
     });
 });
 
+ipcMain.handle('update-event', async (event, updatedEvent: { id: number, date: string, title: string }) => {
+    const { id, date, title } = updatedEvent;
+    const sql = 'UPDATE events SET date = ?, title = ? WHERE id = ?';
+    return new Promise<void>((resolve, reject) => {
+        connection.execute(sql, [date, title, id], (err) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve();
+        });
+    });
+});
+
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
