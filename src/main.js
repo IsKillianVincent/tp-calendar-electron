@@ -46,8 +46,8 @@ const connection = mysql.createConnection({
 });
 function createWindow() {
     const win = new electron_1.BrowserWindow({
-        width: 1000,
-        height: 1000,
+        width: 800,
+        height: 600,
         webPreferences: {
             preload: path_1.default.join(__dirname, 'preload.js'),
             contextIsolation: true,

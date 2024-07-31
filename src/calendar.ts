@@ -11,6 +11,7 @@ const monthYearElement = document.getElementById('monthYear') as HTMLHeadingElem
 const calendarElement = document.getElementById('calendar') as HTMLTableElement;
 const prevMonthButton = document.getElementById('prevMonth') as HTMLButtonElement;
 const nextMonthButton = document.getElementById('nextMonth') as HTMLButtonElement;
+const todayButton = document.getElementById('today') as HTMLButtonElement;
 
 async function loadEvents() {
     events = await window.electron.getEvents();
@@ -33,13 +34,16 @@ function renderCalendar(date: Date) {
     const lastDay = new Date(year, month + 1, 0);
     
     const daysInMonth = lastDay.getDate();
-    const startDay = firstDay.getDay();
+    const startDay = (firstDay.getDay() + 6) % 7; // Ajustement pour démarrer la semaine le lundi
 
-    const daysOfWeek = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    const daysOfWeek = ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.', 'dim.'];
     const headerRow = document.createElement('tr');
-    daysOfWeek.forEach(day => {
+    daysOfWeek.forEach((day, index) => {
         const th = document.createElement('th');
         th.textContent = day;
+        if (index === 5 || index === 6) {
+            th.classList.add('lighter');
+        }
         headerRow.appendChild(th);
     });
     calendarElement.appendChild(headerRow);
@@ -54,7 +58,11 @@ function renderCalendar(date: Date) {
     for (let day = 1; day <= daysInMonth; day++) {
         const currentDateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const td = document.createElement('td');
-        td.textContent = day.toString();
+
+        const dayNumberDiv = document.createElement('div');
+        dayNumberDiv.textContent = day.toString();
+        dayNumberDiv.classList.add('day-number');
+        td.appendChild(dayNumberDiv);
 
         const dailyEvents = events.filter(event => event.date === currentDateString);
         if (dailyEvents.length > 0) {
@@ -62,12 +70,11 @@ function renderCalendar(date: Date) {
             dailyEvents.forEach(event => {
                 const li = document.createElement('li');
                 li.textContent = event.title;
+                li.dataset.eventId = event.id.toString();
+                li.addEventListener('click', () => {
+                    window.location.href = `event-detail.html?id=${event.id}`;
+                });
 
-                const detailLink = document.createElement('a');
-                detailLink.textContent = 'Détail';
-                detailLink.href = `event-detail.html?id=${event.id}`;
-
-                li.appendChild(detailLink);
                 eventList.appendChild(li);
             });
             td.appendChild(eventList);
@@ -93,6 +100,11 @@ prevMonthButton.addEventListener('click', () => {
 
 nextMonthButton.addEventListener('click', () => {
     currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar(currentDate);
+});
+
+todayButton.addEventListener('click', () => {
+    currentDate = new Date();
     renderCalendar(currentDate);
 });
 

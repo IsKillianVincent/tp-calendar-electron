@@ -4,38 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendrier</title>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            text-align: center;
-            padding: 8px;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-        button {
-            margin: 5px;
-        }
-        .espaced {
-            display: flex;
-            justify-content: space-between;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h3>Ajouter un événement</h3>
     <a href="add-event.html">Ajouter un événement</a>
-
-    <h1>Calendrier</h1>
-    <div class="espaced">
-        <button id="prevMonth">Mois Précédent</button>
-        <h2 id="monthYear"></h2>
-        <button id="nextMonth">Mois Suivant</button>
-    </div>
+   <div class="header">
+        <h1 id="monthYear"></h1>
+        <div>
+            <button id="prevMonth" class="arrow">&lt;</button>
+            <button id="today">Aujourd'hui</button>
+            <button id="nextMonth" class="arrow">&gt;</button>
+        </div>
+   </div>
     <table id="calendar"></table>
     <script src="calendar.js"></script>
 </body>
