@@ -58,7 +58,10 @@ function renderCalendar(date: Date) {
     const todayString = new Date().toISOString().split('T')[0]; 
 
     for (let day = 1; day <= daysInMonth; day++) {
-        const currentDateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        // const currentDateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const date = new Date(year, month, day);
+        const currentDateString = date.toISOString().split('T')[0];
+
         const td = document.createElement('td');
 
         const currentDate = new Date(year, month, day);

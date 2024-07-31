@@ -35,7 +35,7 @@ function renderCalendar(date) {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
-    const startDay = (firstDay.getDay() + 6) % 7; // Ajustement pour démarrer la semaine le lundi
+    const startDay = (firstDay.getDay() + 6) % 7;
     const daysOfWeek = ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.', 'dim.'];
     const headerRow = document.createElement('tr');
     daysOfWeek.forEach((day, index) => {
@@ -52,21 +52,21 @@ function renderCalendar(date) {
         const td = document.createElement('td');
         row.appendChild(td);
     }
-    const todayString = new Date().toISOString().split('T')[0]; // Formate de la date d'aujourd'hui
+    const todayString = new Date().toISOString().split('T')[0];
     for (let day = 1; day <= daysInMonth; day++) {
-        const currentDateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        // const currentDateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const date = new Date(year, month, day);
+        const currentDateString = date.toISOString().split('T')[0];
         const td = document.createElement('td');
-        // Appliquer la classe weekend si le jour est un samedi ou un dimanche
         const currentDate = new Date(year, month, day);
-        if (currentDate.getDay() === 6 || currentDate.getDay() === 0) { // 6 = samedi, 0 = dimanche
+        if (currentDate.getDay() === 6 || currentDate.getDay() === 0) {
             td.classList.add('weekend');
         }
         const dayNumberDiv = document.createElement('div');
         dayNumberDiv.textContent = day.toString();
         dayNumberDiv.classList.add('day-number');
-        // Appliquer la classe today si c'est le jour courant
         if (currentDateString === todayString) {
-            dayNumberDiv.classList.add('today'); // Ajouter la classe pour le jour courant
+            dayNumberDiv.classList.add('today');
         }
         td.appendChild(dayNumberDiv);
         const dailyEvents = events.filter(event => event.date === currentDateString);

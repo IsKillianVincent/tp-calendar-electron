@@ -12,7 +12,10 @@ async function loadEventDetails() {
 
     if (event) {
         document.getElementById('eventId').value = event.id;
-        eventDateInput.value = event.date;
+        const [year, month, day] = event.date.split("-").map(Number);
+        let newDay = day + 1;
+        eventDateInput.value = year + '-' + month.toString().padStart(2, '0') + '-' + newDay.toString().padStart(2, '0');
+
         eventTitleInput.value = event.title;
     }
 }
