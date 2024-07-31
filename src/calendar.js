@@ -52,11 +52,12 @@ function renderCalendar(date) {
         const td = document.createElement('td');
         row.appendChild(td);
     }
-    const todayString = new Date().toISOString().split('T')[0];
+    const todayString = new Date().toLocaleDateString();
     for (let day = 1; day <= daysInMonth; day++) {
         // const currentDateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const date = new Date(year, month, day);
         const currentDateString = date.toISOString().split('T')[0];
+        const currentDateStringLocalFormat = date.toLocaleDateString().split('T')[0];
         const td = document.createElement('td');
         const currentDate = new Date(year, month, day);
         if (currentDate.getDay() === 6 || currentDate.getDay() === 0) {
@@ -65,7 +66,7 @@ function renderCalendar(date) {
         const dayNumberDiv = document.createElement('div');
         dayNumberDiv.textContent = day.toString();
         dayNumberDiv.classList.add('day-number');
-        if (currentDateString === todayString) {
+        if (currentDateStringLocalFormat === todayString) {
             dayNumberDiv.classList.add('today');
         }
         td.appendChild(dayNumberDiv);
