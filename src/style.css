@@ -79,6 +79,19 @@ td .day-number {
     right: 4px;
     font-size: 0.8em;
     color: rgba(40, 40, 40, 0.7);
+    padding: 4px;
+}
+
+.day-number.today {
+    background-color: red;
+    color: white;
+    border-radius: 50%; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    height: 30px; 
+    width: 30px;
+    margin: auto;
 }
 
 td ul {
@@ -99,6 +112,10 @@ td ul li {
 
 td ul li:hover {
     background-color: var(--curious-blue-300);
+}
+
+td.weekend {
+    background-color: #f5f5f5; /* Changez cette couleur selon vos préférences */
 }
 
 button {

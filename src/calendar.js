@@ -52,12 +52,22 @@ function renderCalendar(date) {
         const td = document.createElement('td');
         row.appendChild(td);
     }
+    const todayString = new Date().toISOString().split('T')[0]; // Formate de la date d'aujourd'hui
     for (let day = 1; day <= daysInMonth; day++) {
         const currentDateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const td = document.createElement('td');
+        // Appliquer la classe weekend si le jour est un samedi ou un dimanche
+        const currentDate = new Date(year, month, day);
+        if (currentDate.getDay() === 6 || currentDate.getDay() === 0) { // 6 = samedi, 0 = dimanche
+            td.classList.add('weekend');
+        }
         const dayNumberDiv = document.createElement('div');
         dayNumberDiv.textContent = day.toString();
         dayNumberDiv.classList.add('day-number');
+        // Appliquer la classe today si c'est le jour courant
+        if (currentDateString === todayString) {
+            dayNumberDiv.classList.add('today'); // Ajouter la classe pour le jour courant
+        }
         td.appendChild(dayNumberDiv);
         const dailyEvents = events.filter(event => event.date === currentDateString);
         if (dailyEvents.length > 0) {
