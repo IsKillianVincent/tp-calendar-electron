@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions } from 'electron';
 import path from 'path';
 import * as mysql from 'mysql2';
 
@@ -9,8 +9,10 @@ const connection = mysql.createConnection({
     database: 'calendarDB'
 });
 
+let win: BrowserWindow | null;
+
 function createWindow() {
-    const win = new BrowserWindow({
+    win = new BrowserWindow({
         width: 800,
         height: 600,
         webPreferences: {
@@ -20,8 +22,110 @@ function createWindow() {
         },
     });
 
+    const contextMenu = Menu.buildFromTemplate([
+        {
+            label: 'Retour au calendrier',
+            click: () => {
+                if (win) win.loadFile('src/index.html');
+            },
+        },
+        { type: 'separator' },
+        {
+            label: 'Créer un évenment',
+            click: () => {
+                if (win) win.loadFile('src/add-event.html');
+            },
+        },
+        { type: 'separator' },
+        {
+            label: 'Importer...',
+        },
+        {
+            label: 'Exporter...',
+        }
+    ]);
+
+    win.webContents.on('context-menu', (event) => {
+        event.preventDefault();
+        contextMenu.popup();
+    });
+
     win.loadFile('src/index.html');
+
+    win.on('closed', () => {
+        win = null;
+    });
 }
+
+const template: Array<MenuItemConstructorOptions> = [
+    {
+        label: 'Fichier',
+        submenu: [
+            {
+                label: 'Retour au calendrier',
+                click: () => {
+                    if (win) win.loadFile('src/index.html');
+                },
+            },
+            { type: 'separator' },
+            {
+                label: 'Créer un évenment',
+                click: () => {
+                    if (win) win.loadFile('src/add-event.html');
+                },
+            },
+            { type: 'separator' },
+            {
+                label: 'Importer...',
+            },
+            {
+                label: 'Exporter...',
+            }
+        ],
+    },
+    {
+        label: 'Édition',
+        submenu: [
+            { role: 'undo' },
+            { role: 'redo' },
+            { type: 'separator' },
+            { role: 'cut' },
+            { role: 'copy' },
+            { role: 'paste' },
+            { role: 'selectAll' },
+        ],
+    },
+    {
+        label: 'Affichage',
+        submenu: [
+            {
+                label: 'Zoom avant',
+                role: 'zoomIn',
+            },
+            {
+                label: 'Zoom arrière',
+                role: 'zoomOut',
+            },
+            {
+                label: 'Réinitialiser le zoom',
+                role: 'resetZoom',
+            },
+            { type: 'separator' },
+            { role: 'togglefullscreen' },
+        ],
+    },
+    {
+        label: 'Aide',
+        submenu: [
+            {
+                label: 'À propos',
+                click: () => {
+                    console.log('À propos de cette application');
+                },
+            },
+        ],
+    },
+];
 
 ipcMain.handle('add-event', async (event, date: string, title: string) => {
     const sql = 'INSERT INTO events (date, title) VALUES (?, ?)';
@@ -81,6 +185,9 @@ ipcMain.handle('update-event', async (event, updatedEvent: { id: number, date: s
         });
     });
 });
+
+const menu = Menu.buildFromTemplate(template);
+Menu.setApplicationMenu(menu);
 
 app.whenReady().then(createWindow);
 

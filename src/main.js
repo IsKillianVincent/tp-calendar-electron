@@ -44,8 +44,9 @@ const connection = mysql.createConnection({
     password: '',
     database: 'calendarDB'
 });
+let win;
 function createWindow() {
-    const win = new electron_1.BrowserWindow({
+    win = new electron_1.BrowserWindow({
         width: 800,
         height: 600,
         webPreferences: {
@@ -54,8 +55,110 @@ function createWindow() {
             nodeIntegration: false,
         },
     });
+    const contextMenu = electron_1.Menu.buildFromTemplate([
+        {
+            label: 'Retour au calendrier',
+            click: () => {
+                if (win)
+                    win.loadFile('src/index.html');
+            },
+        },
+        { type: 'separator' },
+        {
+            label: 'Créer un évenment',
+            click: () => {
+                if (win)
+                    win.loadFile('src/add-event.html');
+            },
+        },
+        { type: 'separator' },
+        {
+            label: 'Importer...',
+        },
+        {
+            label: 'Exporter...',
+        }
+    ]);
+    win.webContents.on('context-menu', (event) => {
+        event.preventDefault();
+        contextMenu.popup();
+    });
     win.loadFile('src/index.html');
+    win.on('closed', () => {
+        win = null;
+    });
 }
+const template = [
+    {
+        label: 'Fichier',
+        submenu: [
+            {
+                label: 'Retour au calendrier',
+                click: () => {
+                    if (win)
+                        win.loadFile('src/index.html');
+                },
+            },
+            { type: 'separator' },
+            {
+                label: 'Créer un évenment',
+                click: () => {
+                    if (win)
+                        win.loadFile('src/add-event.html');
+                },
+            },
+            { type: 'separator' },
+            {
+                label: 'Importer...',
+            },
+            {
+                label: 'Exporter...',
+            }
+        ],
+    },
+    {
+        label: 'Édition',
+        submenu: [
+            { role: 'undo' },
+            { role: 'redo' },
+            { type: 'separator' },
+            { role: 'cut' },
+            { role: 'copy' },
+            { role: 'paste' },
+            { role: 'selectAll' },
+        ],
+    },
+    {
+        label: 'Affichage',
+        submenu: [
+            {
+                label: 'Zoom avant',
+                role: 'zoomIn',
+            },
+            {
+                label: 'Zoom arrière',
+                role: 'zoomOut',
+            },
+            {
+                label: 'Réinitialiser le zoom',
+                role: 'resetZoom',
+            },
+            { type: 'separator' },
+            { role: 'togglefullscreen' },
+        ],
+    },
+    {
+        label: 'Aide',
+        submenu: [
+            {
+                label: 'À propos',
+                click: () => {
+                    console.log('À propos de cette application');
+                },
+            },
+        ],
+    },
+];
 electron_1.ipcMain.handle('add-event', (event, date, title) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = 'INSERT INTO events (date, title) VALUES (?, ?)';
     return new Promise((resolve, reject) => {
@@ -111,6 +214,8 @@ electron_1.ipcMain.handle('update-event', (event, updatedEvent) => __awaiter(voi
         });
     });
 }));
+const menu = electron_1.Menu.buildFromTemplate(template);
+electron_1.Menu.setApplicationMenu(menu);
 electron_1.app.whenReady().then(createWindow);
 electron_1.app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
