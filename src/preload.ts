@@ -12,5 +12,11 @@ contextBridge.exposeInMainWorld('electron', {
     },
     updateEvent: async (id: number, date: string, title: string) => {
         return await ipcRenderer.invoke('update-event', { id, date, title });
+    },
+    openIcs: async () => {
+        return await ipcRenderer.invoke('open-ics');
+    },
+    saveIcs: async (events: { title: string; date: string }[]) => {
+        return await ipcRenderer.invoke('save-ics', events);
     }
 });

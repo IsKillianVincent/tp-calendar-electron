@@ -110,6 +110,17 @@ function renderCalendar(date: Date) {
     }
 }
 
+document.getElementById('openIcs')?.addEventListener('click', async () => {
+    const events = await window.electron.openIcs();
+    if (events) {
+        console.log(events);
+    }
+});
+
+document.getElementById('saveIcs')?.addEventListener('click', async () => {
+    const eventsToSave = events; 
+    await window.electron.saveIcs(eventsToSave);
+});
 
 prevMonthButton.addEventListener('click', () => {
     currentDate.setMonth(currentDate.getMonth() - 1);

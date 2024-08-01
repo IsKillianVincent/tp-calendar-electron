@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importer des événements</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .event {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .event input {
+            margin-right: 10px;
+        }
+        #saveButton {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Importer des événements</h1>
+    <div id="eventsList"></div>
+    <button id="saveButton">Sauvegarder les événements sélectionnés</button>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        window.onload = async () => {
+            const events = await ipcRenderer.invoke('get-imported-events');
+            const eventsList = document.getElementById('eventsList');
+
+            events.forEach((event, index) => {
+                const eventDiv = document.createElement('div');
+                eventDiv.className = 'event';
+                eventDiv.innerHTML = `
+                    <input type="checkbox" id="event-${index}" data-title="${event.title}" data-date="${event.date}">
+                    <label for="event-${index}">${event.title} - ${new Date(event.date).toLocaleString()}</label>
+                `;
+                eventsList.appendChild(eventDiv);
+            });
+        };
+
+        document.getElementById('saveButton').addEventListener('click', async () => {
+            const checkboxes = document.querySelectorAll('.event input[type="checkbox"]');
+            const selectedEvents = Array.from(checkboxes)
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => ({
+                    title: checkbox.dataset.title,
+                    date: checkbox.dataset.date,
+                }));
+            
+            await ipcRenderer.invoke('save-selected-events', selectedEvents);
+            window.close();
+        });
+    </script>
+</body>
+</html>
