@@ -41,10 +41,18 @@ function createWindow() {
         { type: 'separator' },
         {
             label: 'Importer...',
+            click: () => {
+                 
+            },
         },
         {
             label: 'Exporter...',
+            click: () => {
+                 
+            },
         }
+        
+        
     ]);
 
     win.webContents.on('context-menu', (event) => {
@@ -79,10 +87,16 @@ const template: Array<MenuItemConstructorOptions> = [
             { type: 'separator' },
             {
                 label: 'Importer...',
+                click: () => {
+                    
+                },
             },
             {
                 label: 'Exporter...',
-            }
+                click: () => {
+                   
+                },
+            },
         ],
     },
     {
@@ -196,66 +210,23 @@ let importedEvents: { title: string; date: string }[] = [];
 
 let importWin: BrowserWindow | null = null;
 
-ipcMain.handle('open-ics', async (event: Electron.IpcMainInvokeEvent) => {
-    console.log('Opening ICS file...');
-    const result = await dialog.showOpenDialog({
-        properties: ['openFile'],
-        filters: [{ name: 'iCalendar Files', extensions: ['ics'] }]
-    });
-
-    if (result.canceled) {
-        console.log('No file selected.');
-        return null;
-    }
-
-    const filePath = result.filePaths[0];
-    console.log('Selected file path:', filePath);
-    const fileData = fs.readFileSync(filePath, 'utf-8');
-    const jcalData = ICAL.parse(fileData);
-    const comp = new ICAL.Component(jcalData);
-    importedEvents = comp.getAllProperties('vevent').map((event: ICAL.Property) => ({
-        title: event.getFirstPropertyValue('summary'),
-        date: event.getFirstPropertyValue('dtstart').toString(),
-    }));
-
-    if (win) {
-        importWin = new BrowserWindow({
-            width: 600,
-            height: 400,
-            parent: win,
-            modal: false,
-            webPreferences: {
-                preload: path.join(__dirname, 'preload.js'),
-                contextIsolation: false,
-                nodeIntegration: false,
-            },
-        });
-
-        importWin.loadFile(path.join(__dirname, 'import-events.html'));
-        importWin.on('closed', () => {
-            importWin = null;
-        });
-    }
-
-    return importedEvents;
-});
-
 ipcMain.handle('get-imported-events', async () => {
     return importedEvents;
 });
 
-ipcMain.handle('save-selected-events', async (event, events: { title: string; date: string }[]) => {
+ipcMain.handle('save-selected-events', async (event, events) => {
     console.log('Saving selected events:', events);
     const sql = 'INSERT INTO events (date, title) VALUES (?, ?)';
     
     for (const event of events) {
         await new Promise((resolve, reject) => {
-            connection.execute(sql, [event.date, event.title], (err, results) => {
+            connection.execute(sql, [event.date, event.title], (err) => {
                 if (err) {
+                    console.error('Error saving event:', err);
                     reject(err);
                     return;
                 }
-                resolve(results);
+                resolve(undefined);
             });
         });
     }
@@ -273,7 +244,60 @@ function formatDateForICS(dateString: string) {
     return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
 }
 
-ipcMain.handle('save-ics', async (event, events: { title: string; date: string }[]) => {
+ipcMain.handle('open-ics', async (event: Electron.IpcMainInvokeEvent) => {
+    try {
+        const result = await dialog.showOpenDialog({
+            properties: ['openFile'],
+            filters: [{ name: 'iCalendar Files', extensions: ['ics'] }]
+        });
+
+        if (result.canceled) {
+            console.log('No file selected.');
+            return null;
+        }
+
+        const filePath = result.filePaths[0];
+        const fileData = fs.readFileSync(filePath, 'utf-8');
+        const jcalData = ICAL.parse(fileData);
+        const comp = new ICAL.Component(jcalData);
+        importedEvents = comp.getAllProperties('vevent').map((event: ICAL.Property) => ({
+            title: event.getFirstPropertyValue('summary'),
+            date: event.getFirstPropertyValue('dtstart').toString(),
+        }));
+
+        if (win) {
+            importWin = new BrowserWindow({
+                width: 600,
+                height: 400,
+                parent: win,
+                modal: false,
+                webPreferences: {
+                    preload: path.join(__dirname, 'preload.js'),
+                    contextIsolation: false,
+                    nodeIntegration: false,
+                },
+            });
+    
+            importWin.loadFile(path.join(__dirname,'..', 'src', 'import-events.html'));
+            importWin.on('closed', () => {
+                importWin = null;
+            });
+        }
+
+        return importedEvents;
+    } catch (error) {
+        console.error('Erreur lors de l\'ouverture du fichier ICS:', error);
+        return null;
+    }
+});
+
+
+ipcMain.handle('save-ics', async (event, events) => {
+    if (!Array.isArray(events) || events.length === 0) {
+        console.error('No events to save');
+        return;
+    }
+
     const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
 CALSCALE:GREGORIAN
@@ -293,6 +317,7 @@ END:VCALENDAR`;
 
     fs.writeFileSync(result.filePath, icsContent);
 });
+
 
 
 const menu = Menu.buildFromTemplate(template);

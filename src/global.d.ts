@@ -3,6 +3,7 @@ declare global {
         addEvent(date: string, title: string): Promise<{ id: number; date: string; title: string }>;
         getEvents(): Promise<{ id: number; date: string; title: string }[]>;
         deleteEvent(id: number): Promise<void>;
+        updateEvent(id: number, date: string, title: string): Promise<void>;
         openIcs(): Promise<{ title: string; date: string }[] | null>;
         saveIcs(events: { title: string; date: string }[]): Promise<void>;
     }
