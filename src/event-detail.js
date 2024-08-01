@@ -9,13 +9,18 @@ const deleteButton = document.getElementById('deleteButton');
 async function loadEventDetails() {
     const events = await window.electron.getEvents();
     const event = events.find(e => e.id == eventId);
-
+    console.log(events)
     if (event) {
-        document.getElementById('eventId').value = event.id;
+        // Convertir la date ISO en objet Date
         const [year, month, day] = event.date.split("-").map(Number);
-        let newDay = day + 1;
-        eventDateInput.value = year + '-' + month.toString().padStart(2, '0') + '-' + newDay.toString().padStart(2, '0');
+        let dateObject = new Date(year, month - 1, day); // Les mois commencent à 0 donc on retire 1
 
+        dateObject.setDate(dateObject.getDate() + 1);
+        const newYear = dateObject.getFullYear();
+        const newMonth = (dateObject.getMonth() + 1).toString().padStart(2, '0'); // Ajouter 1 car les mois commencent à 0
+        const newDay = dateObject.getDate().toString().padStart(2, '0');
+
+        eventDateInput.value = `${newYear}-${newMonth}-${newDay}`;
         eventTitleInput.value = event.title;
     }
 }

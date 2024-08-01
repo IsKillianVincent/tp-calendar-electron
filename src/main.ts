@@ -5,7 +5,7 @@ import * as mysql from 'mysql2';
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: '$QNY!JXTk7!o4s1fYL7BSIuo3XIw!q',
+    password: '',
     database: 'calendarDB'
 });
 
@@ -42,6 +42,12 @@ function createWindow() {
         },
         {
             label: 'Exporter...',
+        },
+        {
+            label: 'Ouvrir dev tool',
+            click: () => {
+                if (win) win.webContents.openDevTools();
+            },
         }
     ]);
 
