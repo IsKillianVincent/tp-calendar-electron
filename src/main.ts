@@ -5,7 +5,7 @@ import * as mysql from 'mysql2';
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: '',
+    password: '$QNY!JXTk7!o4s1fYL7BSIuo3XIw!q',
     database: 'calendarDB'
 });
 
@@ -128,6 +128,7 @@ const template: Array<MenuItemConstructorOptions> = [
 ];
 
 ipcMain.handle('add-event', async (event, date: string, title: string) => {
+    console.log('Add event with values:', { date, title });
     const sql = 'INSERT INTO events (date, title) VALUES (?, ?)';
     return new Promise((resolve, reject) => {
         connection.execute(sql, [date, title], (err, results) => {
@@ -160,6 +161,7 @@ ipcMain.handle('get-events', async () => {
 });
 
 ipcMain.handle('delete-event', async (event, id: number) => {
+    console.log('Delete event with id:', { id });
     const sql = 'DELETE FROM events WHERE id = ?';
     return new Promise<void>((resolve, reject) => {
         connection.execute(sql, [id], (err) => {
@@ -174,6 +176,8 @@ ipcMain.handle('delete-event', async (event, id: number) => {
 
 ipcMain.handle('update-event', async (event, updatedEvent: { id: number, date: string, title: string }) => {
     const { id, date, title } = updatedEvent;
+    console.log('Updating event with values:', { id, date, title });
+
     const sql = 'UPDATE events SET date = ?, title = ? WHERE id = ?';
     return new Promise<void>((resolve, reject) => {
         connection.execute(sql, [date, title, id], (err) => {

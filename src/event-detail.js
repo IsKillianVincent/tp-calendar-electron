@@ -25,9 +25,15 @@ eventDetailForm.addEventListener('submit', async (e) => {
     const updatedEvent = {
         id: parseInt(eventId, 10),
         date: eventDateInput.value,
-        title: eventTitleInput.value
+        title: eventTitleInput.value,
     };
-    await window.electron.updateEvent(updatedEvent);
+
+    if (updatedEvent.id === undefined || !updatedEvent.date || !updatedEvent.title) {
+        console.error('Invalid event data:', updatedEvent);
+        return;
+    }
+
+    await window.electron.updateEvent(updatedEvent.id, updatedEvent.date, updatedEvent.title);
     window.location.href = 'index.html';
 });
 
