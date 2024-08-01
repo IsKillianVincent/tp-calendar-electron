@@ -14,14 +14,24 @@ const nextMonthButton = document.getElementById('nextMonth') as HTMLButtonElemen
 const todayButton = document.getElementById('today') as HTMLButtonElement;
 
 async function loadEvents() {
-    events = await window.electron.getEvents();
+    try {
+        events = await window.electron.getEvents();
+    } catch (error) {
+        console.error('Erreur lors du chargement des événements:', error);
+    }
 }
 
 async function deleteEvent(id: number) {
-    await window.electron.deleteEvent(id);
-    events = events.filter(e => e.id !== id);
-    renderCalendar(currentDate);
+    try {
+        await window.electron.deleteEvent(id);
+        events = events.filter(e => e.id !== id);
+        renderCalendar(currentDate);
+    } catch (error) {
+        console.error('Erreur lors de la suppression de l\'événement:', error);
+    }
 }
+
+
 
 function renderCalendar(date: Date) {
     calendarElement.innerHTML = '';
@@ -109,6 +119,23 @@ function renderCalendar(date: Date) {
         calendarElement.appendChild(row);
     }
 }
+
+document.getElementById('openIcs')?.addEventListener('click', async () => {
+    const events = await window.electron.openIcs();
+    if (events) {
+        console.log(events);
+    }
+});
+
+document.getElementById('saveIcs')?.addEventListener('click', async () => {
+    const eventsToSave = events; 
+    try {
+        await window.electron.saveIcs(eventsToSave);
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde des événements:', error);
+    }
+});
+
 
 
 prevMonthButton.addEventListener('click', () => {

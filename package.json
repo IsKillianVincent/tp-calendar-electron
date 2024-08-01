@@ -13,11 +13,12 @@
   "description": "",
   "devDependencies": {
     "@types/electron": "^1.6.10",
-    "@types/node": "^22.0.0",
+    "@types/node": "^22.0.2",
     "electron": "^31.3.1",
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "ical.js": "^2.0.1",
     "mysql2": "^3.11.0"
   }
 }

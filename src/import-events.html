@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importer des événements</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .event {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .event input {
+            margin-right: 10px;
+        }
+        #saveButton, #cancelButton {
+            margin-top: 20px;
+        }
+        #message {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Importer des événements</h1>
+    <div id="message">
+        <p>Cela ajoutera les événements sélectionnés à votre calendrier. Vous pouvez choisir les événements que vous souhaitez importer.</p>
+    </div>
+    <div id="eventsList"></div>
+    <button id="cancelButton">Annuler</button>
+    <button id="saveButton">Ajouter les événements sélectionnés</button>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        window.onload = async () => {
+            const events = await ipcRenderer.invoke('get-imported-events');
+            const eventsList = document.getElementById('eventsList');
+
+            events.forEach((event, index) => {
+                const eventDiv = document.createElement('div');
+                eventDiv.className = 'event';
+                eventDiv.innerHTML = `
+                    <input type="checkbox" id="event-${index}" data-title="${event.title}" data-date="${event.date}">
+                    <label for="event-${index}">${event.title} - ${new Date(event.date).toLocaleString()}</label>
+                `;
+                eventsList.appendChild(eventDiv);
+            });
+        };
+
+        document.getElementById('saveButton').addEventListener('click', async () => {
+    const checkboxes = document.querySelectorAll('.event input[type="checkbox"]');
+    const selectedEvents = Array.from(checkboxes)
+        .filter(checkbox => checkbox.checked)
+        .map(checkbox => ({
+            title: checkbox.dataset.title,
+            date: checkbox.dataset.date,
+        }));
+
+    // Debug: Log the selected events
+    console.log('Selected events:', selectedEvents);
+
+    if (selectedEvents.length > 0) {
+        await ipcRenderer.invoke('save-selected-events', selectedEvents);
+        alert('Événements ajoutés avec succès !'); // Confirmer l'ajout
+        window.close();
+    } else {
+        alert('Veuillez sélectionner au moins un événement à ajouter.'); // Message d'erreur
+    }
+});
+
+
+        document.getElementById('cancelButton').addEventListener('click', () => {
+            window.close(); // Ferme la fenêtre d'importation sans ajouter d'événements
+        });
+
+
+    </script>
+</body>
+</html>
