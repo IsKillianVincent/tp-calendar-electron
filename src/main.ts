@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, dialog, ipcRenderer } from 'electron';
 import path from 'path';
 import * as mysql from 'mysql2';
 import fs from 'fs';
@@ -138,6 +138,12 @@ const template: Array<MenuItemConstructorOptions> = [
                    
                 },
             },
+            {
+                label: 'Ouvrir dev tool',
+                click: () => {
+                    if (win) win.webContents.openDevTools();
+                },
+            }
         ],
     },
     {
@@ -324,12 +330,39 @@ ipcMain.handle('open-ics', async (event: Electron.IpcMainInvokeEvent) => {
 
         const filePath = result.filePaths[0];
         const fileData = fs.readFileSync(filePath, 'utf-8');
-        const jcalData = ICAL.parse(fileData);
-        const comp = new ICAL.Component(jcalData);
-        importedEvents = comp.getAllProperties('vevent').map((event: ICAL.Property) => ({
-            title: event.getFirstPropertyValue('summary'),
-            date: event.getFirstPropertyValue('dtstart').toString(),
-        }));
+        const events = extractAllBetweenMarkers(fileData, "BEGIN:VEVENT", "END:VEVENT");
+
+
+        // const sql = 'INSERT INTO events (date, title) VALUES (?, ?)';
+        // for (const event of events) {
+        //     let importedTitleArray = extractAllBetweenMarkers(event, '\nSUMMARY:', '\nDTSTART:');
+        //     let importedDateArray = extractAllBetweenMarkers(event, '\nDTSTART:', '\n');
+        //     await new Promise((resolve, reject) => {
+        //         connection.execute(sql, [importedDateArray, importedTitleArray], (err) => {
+        //             if (err) {
+        //                 console.error('Error saving event:', err);
+        //                 reject(err);
+        //                 return;
+        //             }
+        //             resolve(undefined);
+        //         });
+        //     });
+        // }
+
+
+        events.forEach(event => {
+            // Extraire le titre et la date pour chaque événement
+            const importedTitleArray = extractAllBetweenMarkers(event, '\nSUMMARY:', '\nDTSTART:');
+            const importedDateArray = extractAllBetweenMarkers(event, '\nDTSTART:', '\n');
+        
+            if (importedTitleArray.length > 0 && importedDateArray.length > 0) {
+                const importedTitle = importedTitleArray[0].trim();
+                const importedDate = importedDateArray[0].trim();
+
+                // window.electron.addEvent(importedDate,importedTitle);
+                ipcRenderer.invoke('add-event', importedDate, importedTitle)
+            }
+        });
 
         if (win) {
             importWin = new BrowserWindow({
@@ -343,8 +376,11 @@ ipcMain.handle('open-ics', async (event: Electron.IpcMainInvokeEvent) => {
                     nodeIntegration: false,
                 },
             });
-    
-            importWin.loadFile(path.join(__dirname,'..', 'src', 'import-events.html'));
+
+            importWin.loadFile('src/import-events.html').then(() => {
+                detailWin?.webContents.send('import-data', importedEvents);
+            });
+
             importWin.on('closed', () => {
                 importWin = null;
             });
@@ -402,3 +438,26 @@ app.on('activate', () => {
         createWindow();
     }
 });
+
+
+function extractAllBetweenMarkers(text: string, startMarker: string, endMarker: string): string[] {
+    const results: string[] = [];
+    let startIndex = 0;
+
+    while (true) {
+        startIndex = text.indexOf(startMarker, startIndex);
+
+        if (startIndex === -1) break;
+
+        const endIndex = text.indexOf(endMarker, startIndex + startMarker.length);
+
+        if (endIndex === -1 || endIndex <= startIndex) break;
+
+        const start = startIndex + startMarker.length;
+        results.push(text.substring(start, endIndex));
+
+        startIndex = endIndex + endMarker.length;
+    }
+
+    return results;
+}
