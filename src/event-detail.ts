@@ -35,6 +35,10 @@ eventDetailForm.addEventListener('submit', async (e) => {
 
     const eventIdElement = document.getElementById('eventId') as HTMLInputElement;
     const eventId = parseInt(eventIdElement.value, 10);
+    console.log("Event ID:", eventId);
+
+    console.log("Event Date Input Value:", eventDateInput.value);
+    console.log("Event Title Input Value:", eventTitleInput.value);
 
     const updatedEvent = {
         id: eventId,
@@ -52,7 +56,8 @@ eventDetailForm.addEventListener('submit', async (e) => {
     try {
         await window.electron.updateEvent(updatedEvent.id, updatedEvent.date, updatedEvent.title);
         console.log("Événement mis à jour avec succès");
-        window.location.href = 'index.html';
+        await window.electron.reloadCalendar();
+        await window.electron.closeWindow();
     } catch (error) {
         console.error('Erreur lors de la mise à jour de l\'événement :', error);
     }
@@ -74,9 +79,7 @@ deleteButton.addEventListener('click', async (e) => {
     try {
         await window.electron.deleteEvent(eventIdNumber);
         console.log("Événement supprimé avec succès");
-        
         await window.electron.reloadCalendar();
-
         await window.electron.closeWindow();
     } catch (error) {
         console.error('Erreur lors de la suppression de l\'événement :', error);

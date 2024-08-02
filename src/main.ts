@@ -243,10 +243,7 @@ ipcMain.handle('open-event-detail', async (event, eventId: number) => {
     }
 });
 
-ipcMain.handle('update-event', async (event, updatedEvent) => {
-    const { id, date, title } = updatedEvent;
-    console.log('Updating event with values:', { id, date, title });
-
+ipcMain.handle('update-event', async (event, id, date, title) => {
     const sql = 'UPDATE events SET date = ?, title = ? WHERE id = ?';
     return new Promise<void>((resolve, reject) => {
         connection.execute(sql, [date, title, id], (err) => {
