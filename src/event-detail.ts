@@ -19,8 +19,19 @@ async function loadEventDetails(eventId: number) {
             const eventIdElement = document.getElementById('eventId') as HTMLInputElement;
             eventIdElement.value = event.id.toString();
 
-            eventDateInput.value = event.date;
-            eventTitleInput.value = event.title;
+            const date = new Date(event.date);
+            date.setDate(date.getDate() + 1);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Les mois sont indexés à partir de 0
+            const day = String(date.getDate()).padStart(2, '0');
+            const newFormattedDate = `${year}-${month}-${day}`;
+
+            const eventDateInput = document.getElementById('eventDate') as HTMLInputElement; // Assurez-vous que cet élément existe
+            const eventTitleInput = document.getElementById('eventTitle') as HTMLInputElement; // Assurez-vous que cet élément existe
+            if (eventDateInput && eventTitleInput) {
+                eventDateInput.value = newFormattedDate;
+                eventTitleInput.value = event.title;
+            }
         } else {
             console.error('Événement non trouvé pour l\'ID :', eventId);
         }
@@ -28,6 +39,7 @@ async function loadEventDetails(eventId: number) {
         console.error('Erreur lors du chargement des détails de l\'événement :', error);
     }
 }
+
 
 eventDetailForm.addEventListener('submit', async (e) => {
     e.preventDefault();
