@@ -75,6 +75,12 @@ td {
     padding: 4px;
 }
 
+td:hover,
+td.weekend:hover {
+    background-color: #e5e5e5;
+
+}
+
 td .day-number {
     position: absolute;
     top: 4px;
@@ -148,9 +154,12 @@ button.arrow {
     border-radius: 4px;
     font-size: 14px;
     font-weight: 500;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     height: 24px;
     width: 24px;
+    border-radius: 50%;
 }
 
 

@@ -7,7 +7,7 @@ import ICAL from 'ical.js';
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: '$QNY!JXTk7!o4s1fYL7BSIuo3XIw!q',
+    password: '',
     database: 'calendarDB'
 });
 
@@ -55,6 +55,8 @@ function createWindow() {
     win = new BrowserWindow({
         width: 800,
         height: 600,
+        minWidth: 600, // Largeur minimale
+        minHeight: 450, // Hauteur minimale
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
