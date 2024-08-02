@@ -28,8 +28,10 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    user-select: none;
 }
 
+/* Index */
 .header {
     width: 100vw;
     height: 6vh;
@@ -101,17 +103,18 @@ td ul {
 }
 
 td ul li {
-    background-color: var(--curious-blue-100);
+    background-color: rgba(255, 0, 0, 0.503);
     padding: 4px;
     margin: 2px 0;
     border-radius: 4px;
     color: var(--black);
     cursor: pointer;
+    font-size: 12px;
     transition: background-color 0.3s;
 }
 
 td ul li:hover {
-    background-color: var(--curious-blue-300);
+    background-color: rgba(255, 0, 0, 0.367);
 }
 
 td.weekend {
@@ -150,3 +153,46 @@ button.arrow {
     width: 24px;
 }
 
+
+/* Add event */
+#eventForm, #eventDetailForm{
+    height: 100vh;
+}
+
+#eventForm, .formContent, #eventDetailForm {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#eventForm input, #eventDetailForm input {
+    padding: 8px 12px;
+    border: 0px;
+    font-size: 12px;
+    outline: none;
+}
+
+#eventForm input#eventTitle, #eventDetailForm input#eventTitle{
+    font-size: 14px;
+    font-weight: 700;
+}
+
+
+#eventForm .formButtons, #eventDetailForm .formButtons {
+    display: flex;
+    flex-direction: row-reverse;
+    padding: 8px;
+    gap: 8px;
+}
+
+#eventForm .formButtons button, #eventDetailForm .formButtons button {
+    font-size: 12px;
+    background-color: #dbdbdb;
+    box-shadow: none;
+    height: 20px;
+}
+
+#eventForm hr, #eventDetailForm hr {
+    border: none;
+    border-top: 1px solid rgb(200 200 200);
+}

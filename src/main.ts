@@ -7,7 +7,7 @@ import ICAL from 'ical.js';
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: '',
+    password: '$QNY!JXTk7!o4s1fYL7BSIuo3XIw!q',
     database: 'calendarDB'
 });
 
@@ -17,8 +17,8 @@ let detailWin: BrowserWindow | null;
 
 function createNewWindow() {
     neWin = new BrowserWindow({
-        width: 600,
-        height: 400,
+        width: 400,
+        height: 200,
         parent: win ? win : undefined,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
@@ -32,8 +32,8 @@ function createNewWindow() {
 
 function createDetailWindow(eventId: number) {
     detailWin = new BrowserWindow({
-        width: 600,
-        height: 400,
+        width: 400,
+        height: 200,
         parent: win ? win : undefined,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
@@ -261,6 +261,16 @@ ipcMain.handle('update-event', async (event, id, date, title) => {
             resolve();
         });
     });
+});
+
+ipcMain.handle('show-message-box', async (event, options) => {
+    if (detailWin) {
+        const response = await dialog.showMessageBox(detailWin, options);
+        return response;
+    } else {
+        console.error('detailWin est nul, ne peut pas afficher la boîte de dialogue.');
+        return { response: -1 };
+    }
 });
 
 ipcMain.handle('delete-event', async (event, id) => {
