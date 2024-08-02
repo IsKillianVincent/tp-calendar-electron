@@ -11,6 +11,9 @@ eventForm.addEventListener('submit', async (e: Event) => {
     if (eventDate && eventTitle) {
         const utcDate = new Date(eventDate).toISOString().split('T')[0];
         await window.electron.addEvent(utcDate, eventTitle);
-        window.location.href = 'index.html';
+        window.electron.onReloadCalendar(() => {
+            console.log("Calendar reloaded");
+        });
+        await window.electron.closeWindow();
     }
 });

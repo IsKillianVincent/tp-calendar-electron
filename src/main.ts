@@ -7,11 +7,49 @@ import ICAL from 'ical.js';
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: '',
+    password: '$QNY!JXTk7!o4s1fYL7BSIuo3XIw!q',
     database: 'calendarDB'
 });
 
 let win: BrowserWindow | null;
+let neWin: BrowserWindow | null;
+let detailWin: BrowserWindow | null;
+
+function createNewWindow() {
+    neWin = new BrowserWindow({
+        width: 600,
+        height: 400,
+        parent: win ? win : undefined,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+        },
+    });
+
+    neWin.loadFile('src/add-event.html')
+}
+
+function createDetailWindow(eventId: number) {
+    detailWin = new BrowserWindow({
+        width: 600,
+        height: 400,
+        parent: win ? win : undefined,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+        },
+    });
+
+    detailWin.loadFile('src/event-detail.html').then(() => {
+        detailWin?.webContents.send('event-detail', eventId);
+    });
+
+    detailWin.on('closed', () => {
+        detailWin = null;
+    });
+}
 
 function createWindow() {
     win = new BrowserWindow({
@@ -35,7 +73,7 @@ function createWindow() {
         {
             label: 'Créer un évenment',
             click: () => {
-                if (win) win.loadFile('src/add-event.html');
+                createNewWindow();
             },
         },
         { type: 'separator' },
@@ -156,6 +194,9 @@ ipcMain.handle('add-event', async (event, date: string, title: string) => {
                 return;
             }
             const resultSet = results as mysql.ResultSetHeader;
+            if (win) {
+                win.webContents.send('reload-calendar');
+            }
             resolve({ id: resultSet.insertId, date, title });
         });
     });
@@ -191,6 +232,28 @@ ipcMain.handle('delete-event', async (event, id: number) => {
             resolve();
         });
     });
+});
+
+ipcMain.handle('close-window', (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (window) {
+        window.close();
+    }
+});
+
+ipcMain.handle('reload-calendar', (event) => {
+    if (win) {
+        win.webContents.send('reload-calendar');
+    }
+});
+
+ipcMain.handle('open-event-detail', async (event, eventId: number) => {
+    if (!detailWin) {
+        createDetailWindow(eventId);
+    } else {
+        detailWin.focus();
+        detailWin.webContents.send('event-detail', eventId);
+    }
 });
 
 ipcMain.handle('update-event', async (event, updatedEvent: { id: number, date: string, title: string }) => {

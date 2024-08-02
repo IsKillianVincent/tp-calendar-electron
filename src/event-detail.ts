@@ -1,23 +1,28 @@
 const urlParams = new URLSearchParams(window.location.search);
 const eventId = urlParams.get('id');
 
-const eventDetailForm = document.getElementById('eventDetailForm');
-const eventDateInput = document.getElementById('eventDate');
-const eventTitleInput = document.getElementById('eventTitle');
-const deleteButton = document.getElementById('deleteButton');
+const eventDetailForm = document.getElementById('eventDetailForm') as HTMLFormElement;
+const eventDateInput = document.getElementById('eventDate') as HTMLInputElement;
+const eventTitleInput = document.getElementById('eventTitle') as HTMLInputElement;
+const deleteButton = document.getElementById('deleteButton') as HTMLButtonElement;
 
-async function loadEventDetails() {
+interface CalendarEvent {
+    id: number;
+    date: string;
+    title: string;
+}
+
+async function loadEventDetails(eventId: number) {
     const events = await window.electron.getEvents();
-    const event = events.find(e => e.id == eventId);
-    console.log(events)
+    const event = events.find((e: CalendarEvent) => e.id === eventId);
+
     if (event) {
-        // Convertir la date ISO en objet Date
         const [year, month, day] = event.date.split("-").map(Number);
-        let dateObject = new Date(year, month - 1, day); // Les mois commencent à 0 donc on retire 1
+        let dateObject = new Date(year, month - 1, day);
 
         dateObject.setDate(dateObject.getDate() + 1);
         const newYear = dateObject.getFullYear();
-        const newMonth = (dateObject.getMonth() + 1).toString().padStart(2, '0'); // Ajouter 1 car les mois commencent à 0
+        const newMonth = (dateObject.getMonth() + 1).toString().padStart(2, '0');
         const newDay = dateObject.getDate().toString().padStart(2, '0');
 
         eventDateInput.value = `${newYear}-${newMonth}-${newDay}`;
@@ -27,8 +32,8 @@ async function loadEventDetails() {
 
 eventDetailForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const updatedEvent = {
-        id: parseInt(eventId, 10),
+    const updatedEvent: CalendarEvent = {
+        id: parseInt(eventId!, 10),
         date: eventDateInput.value,
         title: eventTitleInput.value,
     };
@@ -44,8 +49,15 @@ eventDetailForm.addEventListener('submit', async (e) => {
 
 deleteButton.addEventListener('click', async (e) => {
     e.preventDefault();
-    await window.electron.deleteEvent(eventId);
+    await window.electron.deleteEvent(parseInt(eventId!, 10));
     window.location.href = 'index.html';
 });
 
-loadEventDetails();
+window.electron.onEventDetail(async (eventId: number) => {
+    await loadEventDetails(eventId);
+});
+
+
+if (eventId) {
+    loadEventDetails(Number(eventId));
+}

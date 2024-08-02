@@ -31,8 +31,6 @@ async function deleteEvent(id: number) {
     }
 }
 
-
-
 function renderCalendar(date: Date) {
     calendarElement.innerHTML = '';
     const month = date.getMonth();
@@ -68,7 +66,6 @@ function renderCalendar(date: Date) {
     const todayString = new Date().toLocaleDateString(); 
 
     for (let day = 1; day <= daysInMonth; day++) {
-        // const currentDateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const date = new Date(year, month, day);
         const currentDateString = date.toISOString().split('T')[0];
         const currentDateStringLocalFormat = date.toLocaleDateString().split('T')[0];
@@ -99,9 +96,9 @@ function renderCalendar(date: Date) {
                 li.textContent = event.title;
                 li.dataset.eventId = event.id.toString();
                 li.addEventListener('click', () => {
-                    window.location.href = `event-detail.html?id=${event.id}`;
+                    window.electron.openEventDetail(event.id);
                 });
-
+            
                 eventList.appendChild(li);
             });
             td.appendChild(eventList);
@@ -136,8 +133,6 @@ document.getElementById('saveIcs')?.addEventListener('click', async () => {
     }
 });
 
-
-
 prevMonthButton.addEventListener('click', () => {
     currentDate.setMonth(currentDate.getMonth() - 1);
     renderCalendar(currentDate);
@@ -155,4 +150,16 @@ todayButton.addEventListener('click', () => {
 
 loadEvents().then(() => {
     renderCalendar(currentDate); 
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadEvents().then(() => {
+        renderCalendar(currentDate);
+    });
+
+    window.electron.onReloadCalendar(() => {
+        loadEvents().then(() => {
+            renderCalendar(currentDate);
+        });
+    });
 });
