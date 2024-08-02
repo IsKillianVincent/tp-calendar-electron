@@ -4,15 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Détail de l'événement</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h3>Détail de l'événement</h3>
     <form id="eventDetailForm">
+        <div class="formContent">
+            <input type="text" id="eventTitle" placeholder="Nouvel l'événement" required />
+            <input type="text" id="eventPlace" placeholder="Ajouter un lieu"/>
+            <hr>
+            <input type="date" id="eventDate" required />
+            <hr>
+            <input type="text" id="eventNote" placeholder="Ajouter des notes"/>
+        </div>
+        
+        <div class="formButtons">
+            <button type="submit">Modifier</button>
+            <button type="button" id="deleteButton">Supprimer</button>
+        </div>
         <input type="hidden" id="eventId" />
-        <input type="date" id="eventDate" required />
-        <input type="text" id="eventTitle" placeholder="Titre de l'événement" required />
-        <button type="submit">Modifier</button>
-        <button type="button" id="deleteButton">Supprimer</button>
     </form>
     <script src="../dist/event-detail.js"></script>
 </body>

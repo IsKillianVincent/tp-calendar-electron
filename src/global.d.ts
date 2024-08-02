@@ -17,6 +17,7 @@ declare global {
       openEventDetail: (id: number) => Promise<void>;
       onEventDetail: (callback: (eventId: number) => void) => void;
       updateEvent: (id: number, date: string, title: string) => Promise<void>;
+      showMessageBox: (options: Electron.MessageBoxOptions) => Promise<Electron.DialogReturnValue>;
     };
   }
 }

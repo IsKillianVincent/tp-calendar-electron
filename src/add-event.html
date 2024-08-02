@@ -4,13 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajouter un événement</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h3>Ajouter un événement</h3>
     <form id="eventForm">
-        <input type="date" id="eventDate" required />
-        <input type="text" id="eventTitle" placeholder="Titre de l'événement" required />
-        <button type="submit">Ajouter</button>
+        <div class="formContent">
+            <input type="text" id="eventTitle" placeholder="Nouvel l'événement" required />
+            <input type="text" id="eventPlace" placeholder="Ajouter un lieu"/>
+            <hr>
+            <input type="date" id="eventDate" required />
+            <hr>
+            <input type="text" id="eventNote" placeholder="Ajouter des notes"/>
+        </div>
+        <div class="formButtons">
+            <button type="submit">Ajouter</button>
+        </div>
     </form>
     <script src="../dist/add-event.js"></script>
 </body>

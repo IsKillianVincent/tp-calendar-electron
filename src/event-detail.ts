@@ -22,12 +22,12 @@ async function loadEventDetails(eventId: number) {
             const date = new Date(event.date);
             date.setDate(date.getDate() + 1);
             const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0'); // Les mois sont indexés à partir de 0
+            const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             const newFormattedDate = `${year}-${month}-${day}`;
 
-            const eventDateInput = document.getElementById('eventDate') as HTMLInputElement; // Assurez-vous que cet élément existe
-            const eventTitleInput = document.getElementById('eventTitle') as HTMLInputElement; // Assurez-vous que cet élément existe
+            const eventDateInput = document.getElementById('eventDate') as HTMLInputElement;
+            const eventTitleInput = document.getElementById('eventTitle') as HTMLInputElement;
             if (eventDateInput && eventTitleInput) {
                 eventDateInput.value = newFormattedDate;
                 eventTitleInput.value = event.title;
@@ -88,13 +88,25 @@ deleteButton.addEventListener('click', async (e) => {
         return;
     }
 
-    try {
-        await window.electron.deleteEvent(eventIdNumber);
-        console.log("Événement supprimé avec succès");
-        await window.electron.reloadCalendar();
-        await window.electron.closeWindow();
-    } catch (error) {
-        console.error('Erreur lors de la suppression de l\'événement :', error);
+    const confirmed = await window.electron.showMessageBox({
+        type: 'warning',
+        buttons: [ 'Annuler', 'Supprimer'],
+        defaultId: 1,
+        title: 'Confirmer la suppression',
+        message: 'Êtes-vous sûr de vouloir supprimer cet événement ?'
+    });
+
+    if (confirmed.response === 1) {
+        try {
+            await window.electron.deleteEvent(eventIdNumber);
+            console.log("Événement supprimé avec succès");
+            await window.electron.reloadCalendar();
+            await window.electron.closeWindow();
+        } catch (error) {
+            console.error('Erreur lors de la suppression de l\'événement :', error);
+        }
+    } else {
+        console.log('Suppression annulée');
     }
 });
 

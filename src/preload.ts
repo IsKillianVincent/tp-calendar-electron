@@ -14,4 +14,5 @@ contextBridge.exposeInMainWorld('electron', {
     onReloadCalendar: (callback: () => void) => ipcRenderer.on('reload-calendar', callback),
     openEventDetail: (id: number) => ipcRenderer.invoke('open-event-detail', id),
     onEventDetail: (callback: (eventId: number) => void) => ipcRenderer.on('event-detail', (event, eventId: number) => callback(eventId)),
+    showMessageBox: (options: Electron.MessageBoxOptions) => ipcRenderer.invoke('show-message-box', options),
 });
