@@ -13,5 +13,5 @@ contextBridge.exposeInMainWorld('electron', {
     importSelectedEvents: (events: Event[]) => ipcRenderer.invoke('import-selected-events', events),
     onReloadCalendar: (callback: () => void) => ipcRenderer.on('reload-calendar', callback),
     openEventDetail: (id: number) => ipcRenderer.invoke('open-event-detail', id),
-    onEventDetail: (callback: (eventId: number) => void) => ipcRenderer.on('event-detail', (event, eventId: number) => callback(eventId)), // Assurez-vous que ceci est présent
+    onEventDetail: (callback: (eventId: number) => void) => ipcRenderer.on('event-detail', (event, eventId: number) => callback(eventId)),
 });

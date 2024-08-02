@@ -16,6 +16,7 @@ declare global {
       onReloadCalendar: (callback: () => void) => void;
       openEventDetail: (id: number) => Promise<void>;
       onEventDetail: (callback: (eventId: number) => void) => void;
+      updateEvent: (id: number, date: string, title: string) => Promise<void>;
     };
   }
 }

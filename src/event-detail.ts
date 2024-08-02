@@ -6,55 +6,81 @@ const eventDateInput = document.getElementById('eventDate') as HTMLInputElement;
 const eventTitleInput = document.getElementById('eventTitle') as HTMLInputElement;
 const deleteButton = document.getElementById('deleteButton') as HTMLButtonElement;
 
-interface CalendarEvent {
-    id: number;
-    date: string;
-    title: string;
-}
+window.electron.onEventDetail(async (eventId: number) => {
+    await loadEventDetails(eventId);
+});
 
 async function loadEventDetails(eventId: number) {
-    const events = await window.electron.getEvents();
-    const event = events.find((e: CalendarEvent) => e.id === eventId);
+    try {
+        const events = await window.electron.getEvents();
+        const event = events.find((e: CalendarEvent) => e.id === eventId);
 
-    if (event) {
-        const [year, month, day] = event.date.split("-").map(Number);
-        let dateObject = new Date(year, month - 1, day);
+        if (event) {
+            const eventIdElement = document.getElementById('eventId') as HTMLInputElement;
+            eventIdElement.value = event.id.toString();
 
-        dateObject.setDate(dateObject.getDate() + 1);
-        const newYear = dateObject.getFullYear();
-        const newMonth = (dateObject.getMonth() + 1).toString().padStart(2, '0');
-        const newDay = dateObject.getDate().toString().padStart(2, '0');
-
-        eventDateInput.value = `${newYear}-${newMonth}-${newDay}`;
-        eventTitleInput.value = event.title;
+            eventDateInput.value = event.date;
+            eventTitleInput.value = event.title;
+        } else {
+            console.error('Événement non trouvé pour l\'ID :', eventId);
+        }
+    } catch (error) {
+        console.error('Erreur lors du chargement des détails de l\'événement :', error);
     }
 }
 
 eventDetailForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const updatedEvent: CalendarEvent = {
-        id: parseInt(eventId!, 10),
+    console.log("Form submitted");
+
+    const eventIdElement = document.getElementById('eventId') as HTMLInputElement;
+    const eventId = parseInt(eventIdElement.value, 10);
+
+    const updatedEvent = {
+        id: eventId,
         date: eventDateInput.value,
         title: eventTitleInput.value,
     };
 
-    if (updatedEvent.id === undefined || !updatedEvent.date || !updatedEvent.title) {
-        console.error('Invalid event data:', updatedEvent);
+    console.log("Updated event data:", updatedEvent);
+
+    if (isNaN(updatedEvent.id) || !updatedEvent.date || !updatedEvent.title) {
+        console.error('Données de l\'événement invalides :', updatedEvent);
         return;
     }
 
-    await window.electron.updateEvent(updatedEvent.id, updatedEvent.date, updatedEvent.title);
-    window.location.href = 'index.html';
+    try {
+        await window.electron.updateEvent(updatedEvent.id, updatedEvent.date, updatedEvent.title);
+        console.log("Événement mis à jour avec succès");
+        window.location.href = 'index.html';
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour de l\'événement :', error);
+    }
 });
+
 
 deleteButton.addEventListener('click', async (e) => {
     e.preventDefault();
-    await window.electron.deleteEvent(parseInt(eventId!, 10));
-    window.location.href = 'index.html';
-});
+    console.log("Delete button clicked");
 
-window.electron.onEventDetail(async (eventId: number) => {
-    await loadEventDetails(eventId);
+    const eventIdElement = document.getElementById('eventId') as HTMLInputElement;
+    const eventIdNumber = parseInt(eventIdElement.value, 10);
+
+    if (isNaN(eventIdNumber)) {
+        console.error("ID d'événement invalide pour la suppression :", eventIdNumber);
+        return;
+    }
+
+    try {
+        await window.electron.deleteEvent(eventIdNumber);
+        console.log("Événement supprimé avec succès");
+        
+        await window.electron.reloadCalendar();
+
+        await window.electron.closeWindow();
+    } catch (error) {
+        console.error('Erreur lors de la suppression de l\'événement :', error);
+    }
 });
 
 

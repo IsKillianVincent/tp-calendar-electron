@@ -207,6 +207,7 @@ ipcMain.handle('get-events', async () => {
     return new Promise((resolve, reject) => {
         connection.query(sql, (err, results) => {
             if (err) {
+                console.error('Error fetching events from database:', err);
                 reject(err);
                 return;
             }
@@ -216,20 +217,6 @@ ipcMain.handle('get-events', async () => {
                 title: row.title,
             }));
             resolve(events);
-        });
-    });
-});
-
-ipcMain.handle('delete-event', async (event, id: number) => {
-    console.log('Delete event with id:', { id });
-    const sql = 'DELETE FROM events WHERE id = ?';
-    return new Promise<void>((resolve, reject) => {
-        connection.execute(sql, [id], (err) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            resolve();
         });
     });
 });
@@ -256,7 +243,7 @@ ipcMain.handle('open-event-detail', async (event, eventId: number) => {
     }
 });
 
-ipcMain.handle('update-event', async (event, updatedEvent: { id: number, date: string, title: string }) => {
+ipcMain.handle('update-event', async (event, updatedEvent) => {
     const { id, date, title } = updatedEvent;
     console.log('Updating event with values:', { id, date, title });
 
@@ -264,6 +251,22 @@ ipcMain.handle('update-event', async (event, updatedEvent: { id: number, date: s
     return new Promise<void>((resolve, reject) => {
         connection.execute(sql, [date, title, id], (err) => {
             if (err) {
+                console.error('Error updating event:', err);
+                reject(err);
+                return;
+            }
+            resolve();
+        });
+    });
+});
+
+ipcMain.handle('delete-event', async (event, id) => {
+    console.log('Delete event with id:', { id });
+    const sql = 'DELETE FROM events WHERE id = ?';
+    return new Promise<void>((resolve, reject) => {
+        connection.execute(sql, [id], (err) => {
+            if (err) {
+                console.error('Error deleting event:', err);
                 reject(err);
                 return;
             }
