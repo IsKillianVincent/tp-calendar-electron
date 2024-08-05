@@ -118,9 +118,15 @@ function renderCalendar(date: Date) {
 }
 
 document.getElementById('openIcs')?.addEventListener('click', async () => {
-    const events = await window.electron.openIcs();
-    if (events) {
-        console.log(events);
+    try {
+        const importedEvents = await window.electron.openIcs();
+        if (importedEvents) {
+            console.log('Imported Events:', importedEvents);
+            await loadEvents();
+            renderCalendar(currentDate);
+        }
+    } catch (error) {
+        console.error('Error importing events:', error);
     }
 });
 

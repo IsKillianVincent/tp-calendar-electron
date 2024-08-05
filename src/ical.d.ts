@@ -1,10 +1,7 @@
 declare module 'ical.js' {
     export class Component {
         constructor(data: any);
-        getAllProperties(name: string): Property[];
-    }
-
-    export class Property {
+        getAllSubcomponents(name: string): Component[];
         getFirstPropertyValue(name: string): string;
     }
 

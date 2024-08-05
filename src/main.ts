@@ -3,11 +3,12 @@ import path from 'path';
 import * as mysql from 'mysql2';
 import fs from 'fs';
 import ICAL from 'ical.js';
+import { Component, parse } from 'ical.js';
 
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: '',
+    password: '$QNY!JXTk7!o4s1fYL7BSIuo3XIw!q',
     database: 'calendarDB'
 });
 
@@ -55,8 +56,8 @@ function createWindow() {
     win = new BrowserWindow({
         width: 800,
         height: 600,
-        minWidth: 600, // Largeur minimale
-        minHeight: 450, // Hauteur minimale
+        minWidth: 600,
+        minHeight: 450,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
@@ -82,7 +83,7 @@ function createWindow() {
         {
             label: 'Importer...',
             click: () => {
-                 
+                win?.webContents.send('open-ics');
             },
         },
         {
@@ -130,14 +131,14 @@ const template: Array<MenuItemConstructorOptions> = [
             { type: 'separator' },
             {
                 label: 'Importer...',
-                click: () => {
-                    
+                click: async () => {
+                    const result = await win?.webContents.send('open-ics');
                 },
             },
             {
                 label: 'Exporter...',
-                click: () => {
-                   
+                click: async () => {
+                    const result = await win?.webContents.send('save-ics');
                 },
             },
             {
@@ -328,81 +329,55 @@ function formatDateForICS(dateString: string) {
     return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
 }
 
-ipcMain.handle('open-ics', async (event: Electron.IpcMainInvokeEvent) => {
-    try {
-        const result = await dialog.showOpenDialog({
-            properties: ['openFile'],
-            filters: [{ name: 'iCalendar Files', extensions: ['ics'] }]
-        });
+ipcMain.handle('open-ics', async () => {
+    const result = await dialog.showOpenDialog({
+        properties: ['openFile'],
+        filters: [{ name: 'iCalendar Files', extensions: ['ics'] }]
+    });
 
-        if (result.canceled) {
-            console.log('No file selected.');
-            return null;
-        }
-
-        const filePath = result.filePaths[0];
-        const fileData = fs.readFileSync(filePath, 'utf-8');
-        const events = extractAllBetweenMarkers(fileData, "BEGIN:VEVENT", "END:VEVENT");
-
-
-        // const sql = 'INSERT INTO events (date, title) VALUES (?, ?)';
-        // for (const event of events) {
-        //     let importedTitleArray = extractAllBetweenMarkers(event, '\nSUMMARY:', '\nDTSTART:');
-        //     let importedDateArray = extractAllBetweenMarkers(event, '\nDTSTART:', '\n');
-        //     await new Promise((resolve, reject) => {
-        //         connection.execute(sql, [importedDateArray, importedTitleArray], (err) => {
-        //             if (err) {
-        //                 console.error('Error saving event:', err);
-        //                 reject(err);
-        //                 return;
-        //             }
-        //             resolve(undefined);
-        //         });
-        //     });
-        // }
-
-
-        events.forEach(event => {
-            // Extraire le titre et la date pour chaque événement
-            const importedTitleArray = extractAllBetweenMarkers(event, '\nSUMMARY:', '\nDTSTART:');
-            const importedDateArray = extractAllBetweenMarkers(event, '\nDTSTART:', '\n');
-        
-            if (importedTitleArray.length > 0 && importedDateArray.length > 0) {
-                const importedTitle = importedTitleArray[0].trim();
-                const importedDate = importedDateArray[0].trim();
-
-                // window.electron.addEvent(importedDate,importedTitle);
-                ipcRenderer.invoke('add-event', importedDate, importedTitle)
-            }
-        });
-
-        if (win) {
-            importWin = new BrowserWindow({
-                width: 600,
-                height: 400,
-                parent: win,
-                modal: false,
-                webPreferences: {
-                    preload: path.join(__dirname, 'preload.js'),
-                    contextIsolation: false,
-                    nodeIntegration: false,
-                },
-            });
-
-            importWin.loadFile('src/import-events.html').then(() => {
-                detailWin?.webContents.send('import-data', importedEvents);
-            });
-
-            importWin.on('closed', () => {
-                importWin = null;
-            });
-        }
-
-        return importedEvents;
-    } catch (error) {
-        console.error('Erreur lors de l\'ouverture du fichier ICS:', error);
+    if (result.canceled) {
         return null;
     }
+
+    const filePath = result.filePaths[0];
+    const fileData = fs.readFileSync(filePath, 'utf-8');
+    const jcalData = parse(fileData);
+    const component = new Component(jcalData);
+
+    const events = component.getAllSubcomponents('vevent').map((vevent: any) => {
+        const summary = vevent.getFirstPropertyValue('summary');
+        const dtstart = vevent.getFirstPropertyValue('dtstart');
+        const date = dtstart.toString().substring(0, 10);
+        return { title: summary, date };
+    });
+
+    const response = await dialog.showMessageBox({
+        type: 'question',
+        buttons: ['Oui', 'Non'],
+        defaultId: 0,
+        message: 'Voulez-vous importer ces événements ?',
+        detail: events.map((e: { date: string, title: string }) => `${e.date}: ${e.title}`).join('\n')
+    });
+
+    if (response.response === 0) {
+        const sql = 'INSERT INTO events (date, title) VALUES (?, ?)';
+        for (const event of events) {
+            await new Promise<void>((resolve, reject) => {
+                connection.execute(sql, [event.date, event.title], (err) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    resolve();
+                });
+            });
+        }
+        if (win) {
+            win.webContents.send('reload-calendar');
+        }
+    }
+
+    return events;
 });
 
 
