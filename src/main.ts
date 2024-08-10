@@ -8,7 +8,7 @@ import { Component, parse } from 'ical.js';
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: '$QNY!JXTk7!o4s1fYL7BSIuo3XIw!q',
+    password: 'root',
     database: 'calendarDB'
 });
 
@@ -356,14 +356,17 @@ ipcMain.handle('open-ics', async () => {
         buttons: ['Oui', 'Non'],
         defaultId: 0,
         message: 'Voulez-vous importer ces événements ?',
-        detail: events.map((e: { date: string, title: string }) => `${e.date}: ${e.title}`).join('\n')
+        detail: events.map((e: { date: string, title: string }) => `${e.date} : ${e.title}`).join('\n')
     });
-
+    
     if (response.response === 0) {
         const sql = 'INSERT INTO events (date, title) VALUES (?, ?)';
         for (const event of events) {
+            const eventDate = new Date(event.date);
+            eventDate.setDate(eventDate.getDate() + 1);
+            const newDate = eventDate.toISOString().split('T')[0];
             await new Promise<void>((resolve, reject) => {
-                connection.execute(sql, [event.date, event.title], (err) => {
+                connection.execute(sql, [newDate, event.title], (err) => {
                     if (err) {
                         reject(err);
                         return;
@@ -376,6 +379,7 @@ ipcMain.handle('open-ics', async () => {
             win.webContents.send('reload-calendar');
         }
     }
+    
 
     return events;
 });
